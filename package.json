@@ -47,6 +47,6 @@
     "@nivinjoseph/n-ject": "^1.1.5",
     "@nivinjoseph/n-log": "^1.0.7",
     "@nivinjoseph/n-util": "^1.0.25",
-    "reflect-metadata": "^0.1.12"
+    "moment": "^2.24.0"
   }
 }
