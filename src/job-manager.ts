@@ -1,5 +1,5 @@
 import { given } from "@nivinjoseph/n-defensive";
-import { Container, Registry } from "@nivinjoseph/n-ject";
+import { Container, Registry, Scope } from "@nivinjoseph/n-ject";
 import { ObjectDisposedException } from "@nivinjoseph/n-exception";
 import { Disposable } from "@nivinjoseph/n-util";
 import { JobConfig } from "./job-config";
@@ -39,7 +39,13 @@ export class JobManager implements Disposable
 
         this._container.bootstrap();
 
-        this._jobRegistrations.forEach(t => t.storeJobInstance(this._container.resolve<Job>(t.jobTypeName)));
+        this._jobRegistrations.forEach(t =>
+        {
+            const scope = this._container.createScope();
+            const instance = scope.resolve<Job>(t.jobTypeName);
+            t.storeJobScope(scope);
+            t.storeJobInstance(instance);
+        });
 
         this._isBootstrapped = true;
     }
@@ -51,6 +57,19 @@ export class JobManager implements Disposable
 
         this._isDisposed = true;
 
+        await this._jobRegistrations.forEachAsync(async t =>
+        {
+            try 
+            {
+                if (t.jobScope)
+                    await t.jobScope.dispose();    
+            }
+            catch (error)
+            {
+                console.error(error);
+            }
+        });
+        
         await this._container.dispose();
     }
 
@@ -61,7 +80,7 @@ export class JobManager implements Disposable
 
         const jobRegistrations = jobClasses.map(t => new JobRegistration(t));
 
-        jobRegistrations.forEach(t => this._container.registerSingleton(t.jobTypeName, t.jobType));
+        jobRegistrations.forEach(t => this._container.registerScoped(t.jobTypeName, t.jobType));
 
         return jobRegistrations;
     }
@@ -73,11 +92,13 @@ class JobRegistration
     private readonly _jobTypeName: string;
     private readonly _jobType: Function;
     
+    private _jobScope: Scope | null;
     private _jobInstance: Job | null;
 
 
     public get jobTypeName(): string { return this._jobTypeName; }
     public get jobType(): Function { return this._jobType; }
+    public get jobScope(): Scope | null { return this._jobScope; }
     public get jobInstance(): Job | null { return this._jobInstance; }
 
 
@@ -87,9 +108,18 @@ class JobRegistration
 
         this._jobTypeName = (<Object>jobType).getTypeName();
         this._jobType = jobType;
+        this._jobScope = null;
         this._jobInstance = null;
     }
     
+    
+    public storeJobScope(scope: Scope): void
+    {
+        given(scope, "scope").ensureHasValue().ensureIsObject();
+        given(this, "this").ensure(t => t._jobScope == null, "storing job scope twice");
+
+        this._jobScope = scope;
+    }
     
     public storeJobInstance(job: Job): void
     {
