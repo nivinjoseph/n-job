@@ -1,0 +1,52 @@
+{
+  "name": "@nivinjoseph/n-job",
+  "version": "1.0.0",
+  "description": "Job scheduling and execution",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "ts-compile": "tsc -p .",
+    "ts-lint": "tslint -p . -c tslint.json",
+    "ts-build": "npm run ts-compile && npm run ts-lint",
+    "ts-build-dist": "npm run ts-build && tsc -p ./dist",
+    "clean-src": "find ./src -name '*.js' -delete -o -name '*.map' -delete",
+    "clean-test": "find ./test -name '*.js' -delete -o -name '*.map' -delete",
+    "clean-dist": "find ./dist -name '*.js' -delete -o -name '*.map' -delete -o -name '*.ts' -delete",
+    "clean-all": "npm run clean-src && npm run clean-test && npm run clean-dist",
+    "pretest": "npm run ts-build",
+    "test": "mocha --reporter spec --ui tdd --require ts-node/register './test/**/*.test.js' || true",
+    "pretest-ci": "npm run pretest",
+    "test-ci": "mocha --reporter spec --ui tdd --require ts-node/register './test/**/*.test.js'",
+    "publish-package": "npm run ts-build-dist && git add . && git commit -m 'preparing to publish new version' && npm version patch && git push && npm publish --access=public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nivinjoseph/n-job.git"
+  },
+  "keywords": [
+    "job"
+  ],
+  "author": "NiviN",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nivinjoseph/n-job/issues"
+  },
+  "homepage": "https://github.com/nivinjoseph/n-job#readme",
+  "devDependencies": {
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^8.10.32",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.1"
+  },
+  "dependencies": {
+    "@nivinjoseph/n-defensive": "^1.0.25",
+    "@nivinjoseph/n-exception": "^1.0.17",
+    "@nivinjoseph/n-ext": "^1.1.5",
+    "@nivinjoseph/n-ject": "^1.1.5",
+    "@nivinjoseph/n-log": "^1.0.7",
+    "@nivinjoseph/n-util": "^1.0.25",
+    "reflect-metadata": "^0.1.12"
+  }
+}
