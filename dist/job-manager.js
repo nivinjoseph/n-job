@@ -27,7 +27,12 @@ class JobManager {
             throw new n_exception_1.ObjectDisposedException(this);
         n_defensive_1.given(this, "this").ensure(t => !t._isBootstrapped, "bootstrapping more than once");
         this._container.bootstrap();
-        this._jobRegistrations.forEach(t => t.storeJobInstance(this._container.resolve(t.jobTypeName)));
+        this._jobRegistrations.forEach(t => {
+            const scope = this._container.createScope();
+            const instance = scope.resolve(t.jobTypeName);
+            t.storeJobScope(scope);
+            t.storeJobInstance(instance);
+        });
         this._isBootstrapped = true;
     }
     dispose() {
@@ -35,13 +40,22 @@ class JobManager {
             if (this._isDisposed)
                 return;
             this._isDisposed = true;
+            yield this._jobRegistrations.forEachAsync((t) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    if (t.jobScope)
+                        yield t.jobScope.dispose();
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }));
             yield this._container.dispose();
         });
     }
     createJobRegistrations(jobClasses) {
         n_defensive_1.given(jobClasses, "jobClasses").ensureHasValue().ensureIsArray();
         const jobRegistrations = jobClasses.map(t => new JobRegistration(t));
-        jobRegistrations.forEach(t => this._container.registerSingleton(t.jobTypeName, t.jobType));
+        jobRegistrations.forEach(t => this._container.registerScoped(t.jobTypeName, t.jobType));
         return jobRegistrations;
     }
 }
@@ -49,12 +63,19 @@ exports.JobManager = JobManager;
 class JobRegistration {
     get jobTypeName() { return this._jobTypeName; }
     get jobType() { return this._jobType; }
+    get jobScope() { return this._jobScope; }
     get jobInstance() { return this._jobInstance; }
     constructor(jobType) {
         n_defensive_1.given(jobType, "jobType").ensureHasValue().ensureIsFunction();
         this._jobTypeName = jobType.getTypeName();
         this._jobType = jobType;
+        this._jobScope = null;
         this._jobInstance = null;
+    }
+    storeJobScope(scope) {
+        n_defensive_1.given(scope, "scope").ensureHasValue().ensureIsObject();
+        n_defensive_1.given(this, "this").ensure(t => t._jobScope == null, "storing job scope twice");
+        this._jobScope = scope;
     }
     storeJobInstance(job) {
         n_defensive_1.given(job, "job").ensureHasValue().ensureIsObject();
