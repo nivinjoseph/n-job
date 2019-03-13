@@ -1,6 +1,6 @@
 {
   "name": "@nivinjoseph/n-job",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Job scheduling and execution",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
