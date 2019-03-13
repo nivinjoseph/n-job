@@ -1,0 +1,1 @@
+{"version":3,"file":"job-config.js","sourceRoot":"","sources":["../src/job-config.ts"],"names":[],"mappings":"","sourcesContent":["import { ComponentInstaller } from \"@nivinjoseph/n-ject\";\n\n// public\nexport interface JobConfig\n{\n    jobClasses: ReadonlyArray<Function>;\n    iocInstaller?: ComponentInstaller;\n}"]}

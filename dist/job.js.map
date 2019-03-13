@@ -1,0 +1,1 @@
+{"version":3,"file":"job.js","sourceRoot":"","sources":["../src/job.ts"],"names":[],"mappings":"","sourcesContent":["import { Disposable } from \"@nivinjoseph/n-util\";\n\n// public\n/**\n * @description A Job is a Singleton. Hence it cannot have Scoped dependencies.\n */\nexport interface Job extends Disposable\n{\n    run(): Promise<void>;\n}"]}
