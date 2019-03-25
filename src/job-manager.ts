@@ -1,7 +1,7 @@
 import { given } from "@nivinjoseph/n-defensive";
 import { Container, Registry, Scope } from "@nivinjoseph/n-ject";
 import { ObjectDisposedException } from "@nivinjoseph/n-exception";
-import { Disposable } from "@nivinjoseph/n-util";
+import { Disposable, Delay } from "@nivinjoseph/n-util";
 import { JobConfig } from "./job-config";
 import { Job } from "./job";
 
@@ -38,16 +38,28 @@ export class JobManager implements Disposable
         given(this, "this").ensure(t => !t._isBootstrapped, "bootstrapping more than once");
 
         this._container.bootstrap();
-
-        this._jobRegistrations.forEach(t =>
-        {
-            const scope = this._container.createScope();
-            const instance = scope.resolve<Job>(t.jobTypeName);
-            t.storeJobScope(scope);
-            t.storeJobInstance(instance);
-        });
-
         this._isBootstrapped = true;
+        
+        // this is deliberate to deal with possible Startup scripts
+        Delay.minutes(2)
+            .then(() =>
+            {
+                if (!this._isDisposed)
+                {
+                    this._jobRegistrations.forEach(t =>
+                    {
+                        const scope = this._container.createScope();
+                        const instance = scope.resolve<Job>(t.jobTypeName);
+                        t.storeJobScope(scope);
+                        t.storeJobInstance(instance);
+                    });
+                }
+            })
+            .catch(e =>
+            {
+                console.error(e);
+                throw e;
+            });
     }
 
     public async dispose(): Promise<void>
