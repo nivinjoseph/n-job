@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const n_defensive_1 = require("@nivinjoseph/n-defensive");
 const n_ject_1 = require("@nivinjoseph/n-ject");
 const n_exception_1 = require("@nivinjoseph/n-exception");
+const n_util_1 = require("@nivinjoseph/n-util");
 class JobManager {
     constructor(config) {
         this._isDisposed = false;
@@ -27,13 +28,22 @@ class JobManager {
             throw new n_exception_1.ObjectDisposedException(this);
         n_defensive_1.given(this, "this").ensure(t => !t._isBootstrapped, "bootstrapping more than once");
         this._container.bootstrap();
-        this._jobRegistrations.forEach(t => {
-            const scope = this._container.createScope();
-            const instance = scope.resolve(t.jobTypeName);
-            t.storeJobScope(scope);
-            t.storeJobInstance(instance);
-        });
         this._isBootstrapped = true;
+        n_util_1.Delay.minutes(2)
+            .then(() => {
+            if (!this._isDisposed) {
+                this._jobRegistrations.forEach(t => {
+                    const scope = this._container.createScope();
+                    const instance = scope.resolve(t.jobTypeName);
+                    t.storeJobScope(scope);
+                    t.storeJobInstance(instance);
+                });
+            }
+        })
+            .catch(e => {
+            console.error(e);
+            throw e;
+        });
     }
     dispose() {
         return __awaiter(this, void 0, void 0, function* () {
