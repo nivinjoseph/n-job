@@ -5,12 +5,12 @@ export declare class Schedule {
     private _dayOfWeek;
     private _dayOfMonth;
     private _month;
-    readonly minute: number | null;
-    readonly hour: number | null;
-    readonly dayOfWeek: number | null;
-    readonly dayOfMonth: number | null;
-    readonly month: number | null;
-    readonly timeZone: string | null;
+    get minute(): number | null;
+    get hour(): number | null;
+    get dayOfWeek(): number | null;
+    get dayOfMonth(): number | null;
+    get month(): number | null;
+    get timeZone(): string | null;
     setTimeZone(value: string): this;
     setMinute(value: number): this;
     setHour(value: number): this;

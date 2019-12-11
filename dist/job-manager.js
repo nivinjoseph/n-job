@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -71,10 +72,6 @@ class JobManager {
 }
 exports.JobManager = JobManager;
 class JobRegistration {
-    get jobTypeName() { return this._jobTypeName; }
-    get jobType() { return this._jobType; }
-    get jobScope() { return this._jobScope; }
-    get jobInstance() { return this._jobInstance; }
     constructor(jobType) {
         n_defensive_1.given(jobType, "jobType").ensureHasValue().ensureIsFunction();
         this._jobTypeName = jobType.getTypeName();
@@ -82,6 +79,10 @@ class JobRegistration {
         this._jobScope = null;
         this._jobInstance = null;
     }
+    get jobTypeName() { return this._jobTypeName; }
+    get jobType() { return this._jobType; }
+    get jobScope() { return this._jobScope; }
+    get jobInstance() { return this._jobInstance; }
     storeJobScope(scope) {
         n_defensive_1.given(scope, "scope").ensureHasValue().ensureIsObject();
         n_defensive_1.given(this, "this").ensure(t => t._jobScope == null, "storing job scope twice");

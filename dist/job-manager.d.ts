@@ -6,7 +6,7 @@ export declare class JobManager implements Disposable {
     private readonly _jobRegistrations;
     private _isDisposed;
     private _isBootstrapped;
-    readonly containerRegistry: Registry;
+    get containerRegistry(): Registry;
     constructor(config: JobConfig);
     bootstrap(): void;
     dispose(): Promise<void>;
