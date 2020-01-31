@@ -10,46 +10,55 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const n_defensive_1 = require("@nivinjoseph/n-defensive");
-const n_util_1 = require("@nivinjoseph/n-util");
+const n_exception_1 = require("@nivinjoseph/n-exception");
 class TimedJob {
     constructor(logger, intervalMilliseconds) {
+        this._isStarted = false;
         this._isDisposed = false;
+        this._timeout = null;
         n_defensive_1.given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
         n_defensive_1.given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber().ensure(t => t >= 0);
         this._intervalMilliseconds = intervalMilliseconds;
-        this._backgroundProcessor = new n_util_1.BackgroundProcessor((e) => this._logger.logError(e), this._intervalMilliseconds, false);
-        this._backgroundProcessor.processAction(() => this.runInternal());
-        this._backgroundProcessor.processAction(() => this.runInternal());
-        this._interval = setInterval(() => {
-            if (this._backgroundProcessor.queueLength > 2)
-                return;
-            this._backgroundProcessor.processAction(() => this.runInternal());
-        }, this._intervalMilliseconds);
     }
     get logger() { return this._logger; }
     get isDisposed() { return this._isDisposed; }
+    start() {
+        if (this._isDisposed)
+            throw new n_exception_1.ObjectDisposedException(this);
+        n_defensive_1.given(this, "this").ensure(t => !t._isStarted, "already started");
+        this._isStarted = true;
+        this.execute();
+    }
     dispose() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this._isDisposed)
                 return;
             this._isDisposed = true;
-            clearInterval(this._interval);
-            yield this._backgroundProcessor.dispose(true);
+            if (this._timeout)
+                clearTimeout(this._timeout);
         });
     }
-    runInternal() {
-        return __awaiter(this, void 0, void 0, function* () {
+    execute() {
+        if (this._isDisposed)
+            return;
+        this._timeout = setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+            if (this._isDisposed)
+                return;
+            let isError = false;
             yield this._logger.logInfo(`Starting to run timed job ${this.getTypeName()}.`);
             try {
                 yield this.run();
             }
             catch (error) {
                 yield this._logger.logWarning(`Failed to run timed job ${this.getTypeName()}.`);
-                throw error;
+                yield this._logger.logError(error);
+                isError = true;
             }
-            yield this._logger.logInfo(`Finished running timed job ${this.getTypeName()}.`);
-        });
+            if (!isError)
+                yield this._logger.logInfo(`Finished running timed job ${this.getTypeName()}.`);
+            this.execute();
+        }), this._intervalMilliseconds);
     }
 }
 exports.TimedJob = TimedJob;

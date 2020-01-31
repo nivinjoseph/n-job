@@ -3,13 +3,14 @@ import { Job } from "./job";
 export declare abstract class TimedJob implements Job {
     private readonly _logger;
     private readonly _intervalMilliseconds;
-    private readonly _backgroundProcessor;
-    private readonly _interval;
+    private _isStarted;
     private _isDisposed;
+    private _timeout;
     protected get logger(): Logger;
     protected get isDisposed(): boolean;
     constructor(logger: Logger, intervalMilliseconds: number);
-    abstract run(): Promise<void>;
+    start(): void;
     dispose(): Promise<void>;
-    private runInternal;
+    protected abstract run(): Promise<void>;
+    private execute;
 }

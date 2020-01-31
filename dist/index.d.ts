@@ -1,5 +1,6 @@
-import { Job } from "./job";
-import { TimedJob } from "./timed-job";
-import { JobConfig } from "./job-config";
-import { JobManager } from "./job-manager";
-export { JobManager, JobConfig, Job, TimedJob, };
+export { Job } from "./job";
+export { TimedJob } from "./timed-job";
+export { Schedule } from "./schedule";
+export { InvalidScheduleException } from "./InvalidScheduleException";
+export { ScheduledJob } from "./scheduled-job";
+export { JobManager } from "./job-manager";
