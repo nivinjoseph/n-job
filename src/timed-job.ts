@@ -1,16 +1,16 @@
 import { Logger } from "@nivinjoseph/n-log";
 import { given } from "@nivinjoseph/n-defensive";
-import { BackgroundProcessor } from "@nivinjoseph/n-util";
 import { Job } from "./job";
+import { ObjectDisposedException } from "@nivinjoseph/n-exception";
 
 // public
 export abstract class TimedJob implements Job
 {
     private readonly _logger: Logger;
     private readonly _intervalMilliseconds: number;
-    private readonly _backgroundProcessor: BackgroundProcessor;
-    private readonly _interval: any;
+    private _isStarted = false;
     private _isDisposed = false;
+    private _timeout: any = null;
 
     
     protected get logger(): Logger { return this._logger; }
@@ -24,47 +24,63 @@ export abstract class TimedJob implements Job
 
         given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber().ensure(t => t >= 0);
         this._intervalMilliseconds = intervalMilliseconds;
-
-        this._backgroundProcessor = new BackgroundProcessor((e) => this._logger.logError(e as any), this._intervalMilliseconds, false);
-
-        this._backgroundProcessor.processAction(() => this.runInternal());
-        this._backgroundProcessor.processAction(() => this.runInternal());
-        this._interval = setInterval(() =>
-        {
-            if (this._backgroundProcessor.queueLength > 2)
-                return;
-            
-            this._backgroundProcessor.processAction(() => this.runInternal());
-        }, this._intervalMilliseconds);
     }
 
 
-    public abstract run(): Promise<void>;
-
+    public start(): void
+    { 
+        if (this._isDisposed)
+            throw new ObjectDisposedException(this);
+        
+        given(this, "this").ensure(t => !t._isStarted, "already started");
+        
+        this._isStarted = true;
+        
+        this.execute();
+    }
+    
     public async dispose(): Promise<void>
     {
         if (this._isDisposed)
             return;
-        
+
         this._isDisposed = true;
-        
-        clearInterval(this._interval);
-        await this._backgroundProcessor.dispose(true);
+
+        if (this._timeout)
+            clearTimeout(this._timeout);
     }
-
-
-    private async runInternal(): Promise<void>
+    
+    protected abstract run(): Promise<void>;
+    
+    private execute(): void
     {
-        await this._logger.logInfo(`Starting to run timed job ${(<Object>this).getTypeName()}.`);
-        try 
+        if (this._isDisposed)
+            return;
+        
+        this._timeout = setTimeout(async () =>
         {
-            await this.run();
-        }
-        catch (error)
-        {
-            await this._logger.logWarning(`Failed to run timed job ${(<Object>this).getTypeName()}.`);
-            throw error;
-        }
-        await this._logger.logInfo(`Finished running timed job ${(<Object>this).getTypeName()}.`);
+            if (this._isDisposed)
+                return;
+            
+            let isError = false;
+
+            await this._logger.logInfo(`Starting to run timed job ${(<Object>this).getTypeName()}.`);
+            try 
+            {
+                await this.run();
+            }
+            catch (error)
+            {
+                await this._logger.logWarning(`Failed to run timed job ${(<Object>this).getTypeName()}.`);
+                await this._logger.logError(error);
+                isError = true;
+            }
+
+            if (!isError)
+                await this._logger.logInfo(`Finished running timed job ${(<Object>this).getTypeName()}.`);
+            
+            this.execute();
+
+        }, this._intervalMilliseconds);
     }
 }

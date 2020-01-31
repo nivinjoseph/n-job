@@ -1,65 +1,91 @@
 import { given } from "@nivinjoseph/n-defensive";
-import { Container, Registry, Scope } from "@nivinjoseph/n-ject";
-import { ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { Container, Registry, ServiceLocator, ComponentInstaller } from "@nivinjoseph/n-ject";
+import { ObjectDisposedException, ApplicationException } from "@nivinjoseph/n-exception";
 import { Disposable, Delay } from "@nivinjoseph/n-util";
-import { JobConfig } from "./job-config";
 import { Job } from "./job";
 
 // public
 export class JobManager implements Disposable
 {
     private readonly _container: Container;
-    private readonly _jobRegistrations: ReadonlyArray<JobRegistration>;
+    private readonly _jobRegistrations: Array<JobRegistration>;
 
     private _isDisposed = false;
     private _isBootstrapped = false;
 
 
     public get containerRegistry(): Registry { return this._container; }
+    public get serviceLocator(): ServiceLocator { return this._container; }
 
 
-    public constructor(config: JobConfig)
+    public constructor()
     {
-        given(config, "config").ensureHasValue().ensureIsObject();
-
         this._container = new Container();
-        if (config.iocInstaller)
-            this._container.install(config.iocInstaller);
-
-        this._jobRegistrations = this.createJobRegistrations(config.jobClasses);
+        this._jobRegistrations = [];
     }
 
 
+    public useInstaller(installer: ComponentInstaller): this
+    {
+        given(installer, "installer").ensureHasValue().ensureIsObject();
+        given(this, "this").ensure(t => !t._isBootstrapped, "invoking method after bootstrap");
+
+        this._container.install(installer);
+        return this;
+    }
+    
+    public registerJobs(...jobClasses: Function[]): this
+    {
+        given(jobClasses, "jobClasses").ensureHasValue().ensureIsArray();
+        given(this, "this").ensure(t => !t._isBootstrapped, "invoking method after bootstrap");
+
+        for (let job of jobClasses)
+        {
+            const jobRegistration = new JobRegistration(job);
+            
+            if (this._jobRegistrations.some(t => t.jobType === jobRegistration.jobType))
+                throw new ApplicationException("Duplicate registration detected for Job '{0}'."
+                    .format((job as Object).getTypeName()));
+
+            this._jobRegistrations.push(jobRegistration);
+        }
+
+        return this;
+    }
+    
     public bootstrap(): void
     {
         if (this._isDisposed)
             throw new ObjectDisposedException(this);
 
-        given(this, "this").ensure(t => !t._isBootstrapped, "bootstrapping more than once");
+        given(this, "this")
+            .ensure(t => !t._isBootstrapped, "bootstrapping more than once")
+            .ensure(t => t._jobRegistrations.length > 0, "no jobs registered");
 
         this._container.bootstrap();
         this._isBootstrapped = true;
         
-        // this is deliberate to deal with possible Startup scripts
-        Delay.minutes(2)
-            .then(() =>
-            {
-                if (!this._isDisposed)
-                {
-                    this._jobRegistrations.forEach(t =>
-                    {
-                        const scope = this._container.createScope();
-                        const instance = scope.resolve<Job>(t.jobTypeName);
-                        t.storeJobScope(scope);
-                        t.storeJobInstance(instance);
-                    });
-                }
-            })
-            .catch(e =>
-            {
-                console.error(e);
-                throw e;
-            });
+        this._jobRegistrations.forEach(t =>
+        {
+            const instance = this._container.resolve<Job>(t.jobTypeName);
+            t.storeJobInstance(instance);
+        });
+    }
+    
+    public async beginJobs(): Promise<void>
+    {
+        if (this._isDisposed)
+            throw new ObjectDisposedException(this);
+        
+        given(this, "this")
+            .ensure(t => t._isBootstrapped, "not bootstrapped");
+        
+        this._jobRegistrations.forEach(t => t.jobInstance!.start());
+        
+        while (!this._isDisposed)
+        {
+            await Delay.seconds(2);
+        }
     }
 
     public async dispose(): Promise<void>
@@ -68,33 +94,8 @@ export class JobManager implements Disposable
             return;
 
         this._isDisposed = true;
-
-        await this._jobRegistrations.forEachAsync(async t =>
-        {
-            try 
-            {
-                if (t.jobScope)
-                    await t.jobScope.dispose();    
-            }
-            catch (error)
-            {
-                console.error(error);
-            }
-        });
         
-        await this._container.dispose();
-    }
-
-
-    private createJobRegistrations(jobClasses: ReadonlyArray<Function>): ReadonlyArray<JobRegistration>
-    {
-        given(jobClasses, "jobClasses").ensureHasValue().ensureIsArray();
-
-        const jobRegistrations = jobClasses.map(t => new JobRegistration(t));
-
-        jobRegistrations.forEach(t => this._container.registerScoped(t.jobTypeName, t.jobType));
-
-        return jobRegistrations;
+        await this._container.dispose(); // we let the container take care of disposing the jobs
     }
 }
 
@@ -104,13 +105,11 @@ class JobRegistration
     private readonly _jobTypeName: string;
     private readonly _jobType: Function;
     
-    private _jobScope: Scope | null;
     private _jobInstance: Job | null;
 
 
     public get jobTypeName(): string { return this._jobTypeName; }
     public get jobType(): Function { return this._jobType; }
-    public get jobScope(): Scope | null { return this._jobScope; }
     public get jobInstance(): Job | null { return this._jobInstance; }
 
 
@@ -120,18 +119,9 @@ class JobRegistration
 
         this._jobTypeName = (<Object>jobType).getTypeName();
         this._jobType = jobType;
-        this._jobScope = null;
         this._jobInstance = null;
     }
     
-    
-    public storeJobScope(scope: Scope): void
-    {
-        given(scope, "scope").ensureHasValue().ensureIsObject();
-        given(this, "this").ensure(t => t._jobScope == null, "storing job scope twice");
-
-        this._jobScope = scope;
-    }
     
     public storeJobInstance(job: Job): void
     {
