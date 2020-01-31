@@ -34,7 +34,7 @@ export class JobManager implements Disposable
         return this;
     }
     
-    public registerJobs(...jobClasses: Function[]): this
+    public registerJobs<TClass extends new(...args: any[]) => Job >(...jobClasses: TClass[]): this
     {
         given(jobClasses, "jobClasses").ensureHasValue().ensureIsArray();
         given(this, "this").ensure(t => !t._isBootstrapped, "invoking method after bootstrap");
