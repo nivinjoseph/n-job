@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const n_defensive_1 = require("@nivinjoseph/n-defensive");
 const schedule_1 = require("./schedule");
 const n_exception_1 = require("@nivinjoseph/n-exception");
+// public
 class ScheduledJob {
     constructor(logger, schedule) {
         this._isStarted = false;
@@ -22,6 +23,8 @@ class ScheduledJob {
         n_defensive_1.given(schedule, "schedule").ensureHasValue().ensureIsObject().ensureIsInstanceOf(schedule_1.Schedule);
         this._schedule = schedule;
     }
+    get logger() { return this._logger; }
+    get isDisposed() { return this._isDisposed; }
     start() {
         if (this._isDisposed)
             throw new n_exception_1.ObjectDisposedException(this);

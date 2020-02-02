@@ -7,6 +7,8 @@ export declare abstract class ScheduledJob implements Job {
     private _isStarted;
     private _isDisposed;
     private _timeout;
+    protected get logger(): Logger;
+    protected get isDisposed(): boolean;
     constructor(logger: Logger, schedule: Schedule);
     start(): void;
     dispose(): Promise<void>;
