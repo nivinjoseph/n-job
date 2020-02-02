@@ -36,6 +36,7 @@ class JobManager {
             if (this._jobRegistrations.some(t => t.jobType === jobRegistration.jobType))
                 throw new n_exception_1.ApplicationException("Duplicate registration detected for Job '{0}'."
                     .format(job.getTypeName()));
+            this._container.registerSingleton(jobRegistration.jobTypeName, jobRegistration.jobType);
             this._jobRegistrations.push(jobRegistration);
         }
         return this;
