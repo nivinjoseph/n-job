@@ -1,26 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const n_defensive_1 = require("@nivinjoseph/n-defensive");
-const moment = require("moment");
-const n_exception_1 = require("@nivinjoseph/n-exception");
+const moment = require("moment-timezone");
 const InvalidScheduleException_1 = require("./InvalidScheduleException");
+const schedule_date_time_zone_1 = require("./schedule-date-time-zone");
 class Schedule {
     constructor() {
-        this._timeZone = null;
+        this._timeZone = schedule_date_time_zone_1.ScheduleDateTimeZone.local;
         this._minute = null;
         this._hour = null;
         this._dayOfWeek = null;
         this._dayOfMonth = null;
         this._month = null;
     }
+    get timeZone() { return this._timeZone; }
     get minute() { return this._minute; }
     get hour() { return this._hour; }
     get dayOfWeek() { return this._dayOfWeek; }
     get dayOfMonth() { return this._dayOfMonth; }
     get month() { return this._month; }
-    get timeZone() { return this._timeZone; }
     setTimeZone(value) {
-        throw new n_exception_1.NotImplementedException();
+        n_defensive_1.given(value, "value").ensureHasValue().ensureIsString().ensureIsEnum(schedule_date_time_zone_1.ScheduleDateTimeZone);
+        this._timeZone = value;
+        return this;
     }
     setMinute(value) {
         n_defensive_1.given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 59);
@@ -50,7 +52,7 @@ class Schedule {
         return this;
     }
     calculateNext(referenceDateTime) {
-        const referenceDate = moment(referenceDateTime);
+        const referenceDate = this.createMoment(referenceDateTime);
         const nextDate = referenceDate.clone().millisecond(0).second(0).add(1, "minute");
         if (this._dayOfMonth != null && this._month != null)
             this.validateDayOfMonthAndMonth();
@@ -82,9 +84,30 @@ class Schedule {
     validateDayOfMonthAndMonth() {
         if (this._month === 1 && this._dayOfMonth === 29)
             return;
-        if (moment().month(this._month).daysInMonth() < this._dayOfMonth) {
+        if (this.createMoment().month(this._month).daysInMonth() < this._dayOfMonth) {
             throw new InvalidScheduleException_1.InvalidScheduleException(`${this._month} does not have ${this._dayOfMonth} day.`);
         }
+    }
+    createMoment(dateTime) {
+        n_defensive_1.given(dateTime, "dateTime").ensureIsNumber();
+        let result = dateTime ? moment(dateTime) : moment();
+        switch (this._timeZone) {
+            case schedule_date_time_zone_1.ScheduleDateTimeZone.utc:
+                result = result.utc();
+                break;
+            case schedule_date_time_zone_1.ScheduleDateTimeZone.local:
+                result = result;
+                break;
+            case schedule_date_time_zone_1.ScheduleDateTimeZone.est:
+                result = result.tz("America/New_York");
+                break;
+            case schedule_date_time_zone_1.ScheduleDateTimeZone.pst:
+                result = result.tz("America/Los_Angeles");
+                break;
+            default:
+                throw new InvalidScheduleException_1.InvalidScheduleException("Invalid ScheduleDateTimeZone");
+        }
+        return result;
     }
 }
 exports.Schedule = Schedule;
