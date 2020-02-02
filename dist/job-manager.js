@@ -13,6 +13,7 @@ const n_defensive_1 = require("@nivinjoseph/n-defensive");
 const n_ject_1 = require("@nivinjoseph/n-ject");
 const n_exception_1 = require("@nivinjoseph/n-exception");
 const n_util_1 = require("@nivinjoseph/n-util");
+// public
 class JobManager {
     constructor() {
         this._isDisposed = false;
@@ -71,7 +72,7 @@ class JobManager {
             if (this._isDisposed)
                 return;
             this._isDisposed = true;
-            yield this._container.dispose();
+            yield this._container.dispose(); // we let the container take care of disposing the jobs
         });
     }
 }

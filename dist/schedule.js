@@ -4,6 +4,7 @@ const n_defensive_1 = require("@nivinjoseph/n-defensive");
 const moment = require("moment-timezone");
 const InvalidScheduleException_1 = require("./InvalidScheduleException");
 const schedule_date_time_zone_1 = require("./schedule-date-time-zone");
+// public
 class Schedule {
     constructor() {
         this._timeZone = schedule_date_time_zone_1.ScheduleDateTimeZone.local;
@@ -24,36 +25,55 @@ class Schedule {
         this._timeZone = value;
         return this;
     }
+    /**
+     * @param value [0-59]
+     */
     setMinute(value) {
         n_defensive_1.given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 59);
         this._minute = value;
         return this;
     }
+    /**
+     * @param value [0-23]
+     */
     setHour(value) {
         n_defensive_1.given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 23);
         this._hour = value;
         return this;
     }
+    /**
+     *
+     * @param value [0-6] where 0 is Sunday and 6 is Saturday
+     */
     setDayOfWeek(value) {
         n_defensive_1.given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 6)
             .ensure(_ => this._dayOfMonth === null, "Can not set dayOfWeek when dayOfMonth is set");
         this._dayOfWeek = value;
         return this;
     }
+    /**
+     * @param value [1-31]
+     */
     setDayOfMonth(value) {
         n_defensive_1.given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 1 && t <= 31)
             .ensure(_ => this._dayOfWeek === null, "Can not set dayOfMonth when dayOfWeek is set");
         this._dayOfMonth = value;
         return this;
     }
+    /**
+     * @param value [0-11]
+     */
     setMonth(value) {
         n_defensive_1.given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 11);
         this._month = value;
         return this;
     }
+    /**
+     * @param referenceDateTime epoch time
+     */
     calculateNext(referenceDateTime) {
         const referenceDate = this.createMoment(referenceDateTime);
-        const nextDate = referenceDate.clone().millisecond(0).second(0).add(1, "minute");
+        const nextDate = referenceDate.clone().millisecond(0).second(0).add(1, "minute"); // now + 1 min assuming checks are done every min.
         if (this._dayOfMonth != null && this._month != null)
             this.validateDayOfMonthAndMonth();
         while (true) {
@@ -82,7 +102,7 @@ class Schedule {
         return nextDate.valueOf();
     }
     validateDayOfMonthAndMonth() {
-        if (this._month === 1 && this._dayOfMonth === 29)
+        if (this._month === 1 && this._dayOfMonth === 29) // this is leap year edge case
             return;
         if (this.createMoment().month(this._month).daysInMonth() < this._dayOfMonth) {
             throw new InvalidScheduleException_1.InvalidScheduleException(`${this._month} does not have ${this._dayOfMonth} day.`);

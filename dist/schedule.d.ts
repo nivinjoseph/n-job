@@ -13,11 +13,30 @@ export declare class Schedule {
     get dayOfMonth(): number | null;
     get month(): number | null;
     setTimeZone(value: ScheduleDateTimeZone): this;
+    /**
+     * @param value [0-59]
+     */
     setMinute(value: number): this;
+    /**
+     * @param value [0-23]
+     */
     setHour(value: number): this;
+    /**
+     *
+     * @param value [0-6] where 0 is Sunday and 6 is Saturday
+     */
     setDayOfWeek(value: number): this;
+    /**
+     * @param value [1-31]
+     */
     setDayOfMonth(value: number): this;
+    /**
+     * @param value [0-11]
+     */
     setMonth(value: number): this;
+    /**
+     * @param referenceDateTime epoch time
+     */
     calculateNext(referenceDateTime: number): number;
     private validateDayOfMonthAndMonth;
     private createMoment;
