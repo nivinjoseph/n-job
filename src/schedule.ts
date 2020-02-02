@@ -28,21 +28,31 @@ export class Schedule
         this._timeZone = value;
         return this;
     }
-    // 0-59
+    
+    /**
+     * @param value [0-59]
+     */
     public setMinute(value: number): this
     {
         given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 59);
         this._minute = value;
         return this;
     }
-    // 0-23
+    
+    /**
+     * @param value [0-23]
+     */
     public setHour(value: number): this
     {
         given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 23);
         this._hour = value;
         return this;
     }
-    // 0-6
+    
+    /**
+     * 
+     * @param value [0-6] where 0 is Sunday and 6 is Saturday
+     */
     public setDayOfWeek(value: number): this
     {
         given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 6)
@@ -50,7 +60,10 @@ export class Schedule
         this._dayOfWeek = value;
         return this;
     }
-    // 1-31
+    
+    /**
+     * @param value [1-31]
+     */
     public setDayOfMonth(value: number): this
     {
         given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 1 && t <= 31)
@@ -58,7 +71,10 @@ export class Schedule
         this._dayOfMonth = value;
         return this;
     }
-    // 0-11
+    
+    /**
+     * @param value [0-11]
+     */
     public setMonth(value: number): this
     {
         given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 11);
@@ -66,6 +82,9 @@ export class Schedule
         return this;
     }
 
+    /**
+     * @param referenceDateTime epoch time
+     */
     public calculateNext(referenceDateTime: number): number
     {
         const referenceDate = this.createMoment(referenceDateTime);
