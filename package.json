@@ -34,6 +34,7 @@
   "homepage": "https://github.com/nivinjoseph/n-job#readme",
   "devDependencies": {
     "@types/mocha": "^5.2.7",
+    "@types/moment-timezone": "^0.5.12",
     "@types/node": "^12.12.17",
     "mocha": "^6.2.2",
     "ts-node": "^8.5.4",
@@ -48,6 +49,7 @@
     "@nivinjoseph/n-ject": "^1.1.9",
     "@nivinjoseph/n-log": "^1.0.10",
     "@nivinjoseph/n-util": "^1.0.38",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "moment-timezone": "^0.5.27"
   }
 }

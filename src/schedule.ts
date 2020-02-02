@@ -1,12 +1,12 @@
 import { given } from "@nivinjoseph/n-defensive";
-import * as moment from "moment";
-import { NotImplementedException } from "@nivinjoseph/n-exception";
+import * as moment from "moment-timezone";
 import { InvalidScheduleException } from "./InvalidScheduleException";
+import { ScheduleDateTimeZone } from "./schedule-date-time-zone";
 
 // public
 export class Schedule
 {
-    private readonly _timeZone: string | null = null;
+    private _timeZone: ScheduleDateTimeZone = ScheduleDateTimeZone.local;
     private _minute: number | null = null;
     private _hour: number | null = null;
     private _dayOfWeek: number | null = null;
@@ -14,17 +14,19 @@ export class Schedule
     private _month: number | null = null;
 
 
+    public get timeZone(): ScheduleDateTimeZone { return this._timeZone; }
     public get minute(): number | null { return this._minute; }
     public get hour(): number | null { return this._hour; }
     public get dayOfWeek(): number | null { return this._dayOfWeek; }
     public get dayOfMonth(): number | null { return this._dayOfMonth; }
     public get month(): number | null { return this._month; }
-    public get timeZone(): string | null { return this._timeZone; }
-
-    // @ts-ignore
-    public setTimeZone(value: string): this
+    
+    
+    public setTimeZone(value: ScheduleDateTimeZone): this
     {
-        throw new NotImplementedException();
+        given(value, "value").ensureHasValue().ensureIsString().ensureIsEnum(ScheduleDateTimeZone);
+        this._timeZone = value;
+        return this;
     }
     // 0-59
     public setMinute(value: number): this
@@ -66,7 +68,7 @@ export class Schedule
 
     public calculateNext(referenceDateTime: number): number
     {
-        const referenceDate = moment(referenceDateTime);
+        const referenceDate = this.createMoment(referenceDateTime);
 
         const nextDate = referenceDate.clone().millisecond(0).second(0).add(1, "minute"); // now + 1 min assuming checks are done every min.
 
@@ -112,9 +114,36 @@ export class Schedule
         if (this._month === 1 && this._dayOfMonth === 29) // this is leap year edge case
             return;
 
-        if (moment().month(this._month as number).daysInMonth() < (<number>this._dayOfMonth))
+        if (this.createMoment().month(this._month as number).daysInMonth() < (<number>this._dayOfMonth))
         {
             throw new InvalidScheduleException(`${this._month} does not have ${this._dayOfMonth} day.`);
         }
+    }
+    
+    private createMoment(dateTime?: number): moment.Moment
+    {
+        given(dateTime as number, "dateTime").ensureIsNumber();
+        
+        let result = dateTime ? moment(dateTime) : moment();
+        
+        switch (this._timeZone)
+        {
+            case ScheduleDateTimeZone.utc:
+                result = result.utc();
+                break;
+            case ScheduleDateTimeZone.local:
+                result = result;
+                break;
+            case ScheduleDateTimeZone.est:
+                result = result.tz("America/New_York");
+                break;
+            case ScheduleDateTimeZone.pst:
+                result = result.tz("America/Los_Angeles");
+                break;
+            default:
+                throw new InvalidScheduleException("Invalid ScheduleDateTimeZone");
+        }
+        
+        return result;
     }
 }
