@@ -47,6 +47,7 @@ export class JobManager implements Disposable
                 throw new ApplicationException("Duplicate registration detected for Job '{0}'."
                     .format((job as Object).getTypeName()));
 
+            this._container.registerSingleton(jobRegistration.jobTypeName, jobRegistration.jobType);
             this._jobRegistrations.push(jobRegistration);
         }
 
