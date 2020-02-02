@@ -4,7 +4,7 @@ import { given } from "@nivinjoseph/n-defensive";
 import { Schedule } from "./schedule";
 import { ObjectDisposedException } from "@nivinjoseph/n-exception";
 
-
+// public
 export abstract class ScheduledJob implements Job
 {
     private readonly _logger: Logger;
@@ -12,8 +12,12 @@ export abstract class ScheduledJob implements Job
     private _isStarted = false;
     private _isDisposed = false;
     private _timeout: any = null;
+    
+    
+    protected get logger(): Logger { return this._logger; }
+    protected get isDisposed(): boolean { return this._isDisposed; }
 
-
+    
     public constructor(logger: Logger, schedule: Schedule)
     {
         given(logger, "logger").ensureHasValue().ensureIsObject();
