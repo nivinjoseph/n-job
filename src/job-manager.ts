@@ -18,9 +18,11 @@ export class JobManager implements Disposable
     public get serviceLocator(): ServiceLocator { return this._container; }
 
 
-    public constructor()
+    public constructor(container?: Container)
     {
-        this._container = new Container();
+        given(container as Container, "container").ensureIsObject().ensureIsType(Container);
+
+        this._container = container ?? new Container();
         this._jobRegistrations = [];
     }
 
