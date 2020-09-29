@@ -1,4 +1,4 @@
-import { Registry, ServiceLocator, ComponentInstaller } from "@nivinjoseph/n-ject";
+import { Container, Registry, ServiceLocator, ComponentInstaller } from "@nivinjoseph/n-ject";
 import { Disposable } from "@nivinjoseph/n-util";
 import { Job } from "./job";
 export declare class JobManager implements Disposable {
@@ -8,7 +8,7 @@ export declare class JobManager implements Disposable {
     private _isBootstrapped;
     get containerRegistry(): Registry;
     get serviceLocator(): ServiceLocator;
-    constructor();
+    constructor(container?: Container);
     useInstaller(installer: ComponentInstaller): this;
     registerJobs<TClass extends new (...args: any[]) => Job>(...jobClasses: TClass[]): this;
     bootstrap(): void;

@@ -9,16 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.JobManager = void 0;
 const n_defensive_1 = require("@nivinjoseph/n-defensive");
 const n_ject_1 = require("@nivinjoseph/n-ject");
 const n_exception_1 = require("@nivinjoseph/n-exception");
 const n_util_1 = require("@nivinjoseph/n-util");
 // public
 class JobManager {
-    constructor() {
+    constructor(container) {
         this._isDisposed = false;
         this._isBootstrapped = false;
-        this._container = new n_ject_1.Container();
+        n_defensive_1.given(container, "container").ensureIsObject().ensureIsType(n_ject_1.Container);
+        this._container = container !== null && container !== void 0 ? container : new n_ject_1.Container();
         this._jobRegistrations = [];
     }
     get containerRegistry() { return this._container; }
