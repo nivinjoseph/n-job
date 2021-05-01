@@ -2,6 +2,7 @@ import { Logger } from "@nivinjoseph/n-log";
 import { given } from "@nivinjoseph/n-defensive";
 import { Job } from "./job";
 import { ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { Duration } from "@nivinjoseph/n-util";
 
 // public
 export abstract class TimedJob implements Job
@@ -22,7 +23,8 @@ export abstract class TimedJob implements Job
         given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
 
-        given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber().ensure(t => t >= 0);
+        given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber()
+            .ensure(t => t >= 0 && t <= Duration.fromHours(12), "should be between 0 ms and 12 hrs");
         this._intervalMilliseconds = intervalMilliseconds;
     }
 

@@ -3,6 +3,7 @@ import { Logger } from "@nivinjoseph/n-log";
 import { given } from "@nivinjoseph/n-defensive";
 import { Schedule } from "./schedule";
 import { ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { Duration } from "@nivinjoseph/n-util";
 
 // public
 export abstract class ScheduledJob implements Job
@@ -60,6 +61,13 @@ export abstract class ScheduledJob implements Job
 
         const now = Date.now();
         const next = this._schedule.calculateNext(now) - now;
+        if (next > Duration.fromDays(20))
+        {
+            this._logger.logWarning("Next execution is over 20 days from now. Scheduling skipped.")
+                .catch(e => console.error(e));
+            
+            return;
+        }
         
         this._timeout = setTimeout(async () =>
         {
