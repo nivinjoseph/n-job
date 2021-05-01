@@ -13,6 +13,7 @@ exports.ScheduledJob = void 0;
 const n_defensive_1 = require("@nivinjoseph/n-defensive");
 const schedule_1 = require("./schedule");
 const n_exception_1 = require("@nivinjoseph/n-exception");
+const n_util_1 = require("@nivinjoseph/n-util");
 // public
 class ScheduledJob {
     constructor(logger, schedule) {
@@ -47,6 +48,11 @@ class ScheduledJob {
             return;
         const now = Date.now();
         const next = this._schedule.calculateNext(now) - now;
+        if (next > n_util_1.Duration.fromDays(20)) {
+            this._logger.logWarning("Next execution is over 20 days from now. Scheduling skipped.")
+                .catch(e => console.error(e));
+            return;
+        }
         this._timeout = setTimeout(() => __awaiter(this, void 0, void 0, function* () {
             if (this._isDisposed)
                 return;

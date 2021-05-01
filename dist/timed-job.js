@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimedJob = void 0;
 const n_defensive_1 = require("@nivinjoseph/n-defensive");
 const n_exception_1 = require("@nivinjoseph/n-exception");
+const n_util_1 = require("@nivinjoseph/n-util");
 // public
 class TimedJob {
     constructor(logger, intervalMilliseconds) {
@@ -20,7 +21,8 @@ class TimedJob {
         this._timeout = null;
         n_defensive_1.given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
-        n_defensive_1.given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber().ensure(t => t >= 0);
+        n_defensive_1.given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber()
+            .ensure(t => t >= 0 && t <= n_util_1.Duration.fromHours(12), "should be between 0 ms and 12 hrs");
         this._intervalMilliseconds = intervalMilliseconds;
     }
     get logger() { return this._logger; }
