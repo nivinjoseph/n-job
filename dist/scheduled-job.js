@@ -48,9 +48,19 @@ class ScheduledJob {
             return;
         const now = Date.now();
         const next = this._schedule.calculateNext(now) - now;
+        // if (next > Duration.fromDays(20))
+        // {
+        //     this._logger.logWarning("Next execution is over 20 days from now. Scheduling skipped.")
+        //         .catch(e => console.error(e));
+        //     return;
+        // }
         if (next > n_util_1.Duration.fromDays(20)) {
-            this._logger.logWarning("Next execution is over 20 days from now. Scheduling skipped.")
-                .catch(e => console.error(e));
+            // We reschedule the scheduling
+            this._timeout = setTimeout(() => {
+                if (this._isDisposed)
+                    return;
+                this.execute();
+            }, n_util_1.Duration.fromDays(15));
             return;
         }
         this._timeout = setTimeout(() => __awaiter(this, void 0, void 0, function* () {
