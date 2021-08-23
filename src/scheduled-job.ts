@@ -61,10 +61,25 @@ export abstract class ScheduledJob implements Job
 
         const now = Date.now();
         const next = this._schedule.calculateNext(now) - now;
+        // if (next > Duration.fromDays(20))
+        // {
+        //     this._logger.logWarning("Next execution is over 20 days from now. Scheduling skipped.")
+        //         .catch(e => console.error(e));
+            
+        //     return;
+        // }
+        
         if (next > Duration.fromDays(20))
         {
-            this._logger.logWarning("Next execution is over 20 days from now. Scheduling skipped.")
-                .catch(e => console.error(e));
+            // We reschedule the scheduling
+            this._timeout = setTimeout(() =>
+            {
+                if (this._isDisposed)
+                    return;
+
+                this.execute();
+
+            }, Duration.fromDays(15));
             
             return;
         }
