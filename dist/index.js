@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JobManager = exports.ScheduledJob = exports.InvalidScheduleException = exports.ScheduleDateTimeZone = exports.Schedule = exports.TimedJob = void 0;
+require("@nivinjoseph/n-ext");
 var timed_job_1 = require("./timed-job");
 Object.defineProperty(exports, "TimedJob", { enumerable: true, get: function () { return timed_job_1.TimedJob; } });
 var schedule_1 = require("./schedule");
