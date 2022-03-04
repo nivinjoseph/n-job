@@ -18,14 +18,14 @@ export abstract class TimedJob implements Job
     protected get isDisposed(): boolean { return this._isDisposed; }
 
 
-    public constructor(logger: Logger, intervalMilliseconds: number)
+    public constructor(logger: Logger, intervalDuration: Duration)
     {
         given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
 
-        given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber()
-            .ensure(t => t >= 0 && t <= Duration.fromHours(12), "should be between 0 ms and 12 hrs");
-        this._intervalMilliseconds = intervalMilliseconds;
+        given(intervalDuration, "intervalDuration").ensureHasValue().ensureIsInstanceOf(Duration)
+            .ensure(t => t.toMilliSeconds(true) >= 0 && t.toMilliSeconds(true) <= Duration.fromHours(12).toMilliSeconds(true), "should be between 0 ms and 12 hrs");
+        this._intervalMilliseconds = intervalDuration.toMilliSeconds(true);
     }
 
 

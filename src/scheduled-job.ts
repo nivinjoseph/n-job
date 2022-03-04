@@ -69,7 +69,7 @@ export abstract class ScheduledJob implements Job
         //     return;
         // }
         
-        if (next > Duration.fromDays(20))
+        if (next > Duration.fromDays(20).toMilliSeconds(true))
         {
             // We reschedule the scheduling
             this._timeout = setTimeout(() =>
@@ -79,7 +79,7 @@ export abstract class ScheduledJob implements Job
 
                 this.execute();
 
-            }, Duration.fromDays(15));
+            }, Duration.fromDays(15).toMilliSeconds(true));
             
             return;
         }
