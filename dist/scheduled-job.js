@@ -54,13 +54,13 @@ class ScheduledJob {
         //         .catch(e => console.error(e));
         //     return;
         // }
-        if (next > n_util_1.Duration.fromDays(20)) {
+        if (next > n_util_1.Duration.fromDays(20).toMilliSeconds(true)) {
             // We reschedule the scheduling
             this._timeout = setTimeout(() => {
                 if (this._isDisposed)
                     return;
                 this.execute();
-            }, n_util_1.Duration.fromDays(15));
+            }, n_util_1.Duration.fromDays(15).toMilliSeconds(true));
             return;
         }
         this._timeout = setTimeout(() => __awaiter(this, void 0, void 0, function* () {

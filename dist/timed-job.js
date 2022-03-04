@@ -15,15 +15,15 @@ const n_exception_1 = require("@nivinjoseph/n-exception");
 const n_util_1 = require("@nivinjoseph/n-util");
 // public
 class TimedJob {
-    constructor(logger, intervalMilliseconds) {
+    constructor(logger, intervalDuration) {
         this._isStarted = false;
         this._isDisposed = false;
         this._timeout = null;
         n_defensive_1.given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
-        n_defensive_1.given(intervalMilliseconds, "intervalMilliseconds").ensureHasValue().ensureIsNumber()
-            .ensure(t => t >= 0 && t <= n_util_1.Duration.fromHours(12), "should be between 0 ms and 12 hrs");
-        this._intervalMilliseconds = intervalMilliseconds;
+        n_defensive_1.given(intervalDuration, "intervalDuration").ensureHasValue().ensureIsInstanceOf(n_util_1.Duration)
+            .ensure(t => t.toMilliSeconds(true) >= 0 && t.toMilliSeconds(true) <= n_util_1.Duration.fromHours(12).toMilliSeconds(true), "should be between 0 ms and 12 hrs");
+        this._intervalMilliseconds = intervalDuration.toMilliSeconds(true);
     }
     get logger() { return this._logger; }
     get isDisposed() { return this._isDisposed; }
