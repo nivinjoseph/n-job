@@ -8,6 +8,7 @@ import { Job } from "./job";
 export class JobManager implements Disposable
 {
     private readonly _container: Container;
+    private readonly _ownsContainer: boolean;
     private readonly _jobRegistrations: Array<JobRegistration>;
 
     private _isDisposed = false;
@@ -22,7 +23,17 @@ export class JobManager implements Disposable
     {
         given(container as Container, "container").ensureIsObject().ensureIsType(Container);
 
-        this._container = container ?? new Container();
+        if (container == null)
+        {
+            this._container = new Container();
+            this._ownsContainer = true;
+        }
+        else
+        {
+            this._container = container;
+            this._ownsContainer = false;
+        }
+        
         this._jobRegistrations = [];
     }
 
@@ -65,7 +76,9 @@ export class JobManager implements Disposable
             .ensure(t => !t._isBootstrapped, "bootstrapping more than once")
             .ensure(t => t._jobRegistrations.length > 0, "no jobs registered");
 
-        this._container.bootstrap();
+        if (this._ownsContainer)
+            this._container.bootstrap();
+        
         this._isBootstrapped = true;
         
         this._jobRegistrations.forEach(t =>
