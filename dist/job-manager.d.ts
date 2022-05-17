@@ -3,6 +3,7 @@ import { Disposable } from "@nivinjoseph/n-util";
 import { Job } from "./job";
 export declare class JobManager implements Disposable {
     private readonly _container;
+    private readonly _ownsContainer;
     private readonly _jobRegistrations;
     private _isDisposed;
     private _isBootstrapped;

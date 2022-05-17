@@ -20,7 +20,14 @@ class JobManager {
         this._isDisposed = false;
         this._isBootstrapped = false;
         n_defensive_1.given(container, "container").ensureIsObject().ensureIsType(n_ject_1.Container);
-        this._container = container !== null && container !== void 0 ? container : new n_ject_1.Container();
+        if (container == null) {
+            this._container = new n_ject_1.Container();
+            this._ownsContainer = true;
+        }
+        else {
+            this._container = container;
+            this._ownsContainer = false;
+        }
         this._jobRegistrations = [];
     }
     get containerRegistry() { return this._container; }
@@ -50,7 +57,8 @@ class JobManager {
         n_defensive_1.given(this, "this")
             .ensure(t => !t._isBootstrapped, "bootstrapping more than once")
             .ensure(t => t._jobRegistrations.length > 0, "no jobs registered");
-        this._container.bootstrap();
+        if (this._ownsContainer)
+            this._container.bootstrap();
         this._isBootstrapped = true;
         this._jobRegistrations.forEach(t => {
             const instance = this._container.resolve(t.jobTypeName);
