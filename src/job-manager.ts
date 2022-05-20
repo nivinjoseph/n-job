@@ -1,7 +1,7 @@
 import { given } from "@nivinjoseph/n-defensive";
 import { Container, Registry, ServiceLocator, ComponentInstaller } from "@nivinjoseph/n-ject";
 import { ObjectDisposedException, ApplicationException } from "@nivinjoseph/n-exception";
-import { Disposable, Delay } from "@nivinjoseph/n-util";
+import { Disposable, Delay, ClassHierarchy } from "@nivinjoseph/n-util";
 import { Job } from "./job";
 
 // public
@@ -47,12 +47,12 @@ export class JobManager implements Disposable
         return this;
     }
     
-    public registerJobs<TClass extends new(...args: any[]) => Job >(...jobClasses: TClass[]): this
+    public registerJobs(...jobClasses: ReadonlyArray<ClassHierarchy<Job>>): this
     {
         given(jobClasses, "jobClasses").ensureHasValue().ensureIsArray();
         given(this, "this").ensure(t => !t._isBootstrapped, "invoking method after bootstrap");
 
-        for (let job of jobClasses)
+        for (const job of jobClasses)
         {
             const jobRegistration = new JobRegistration(job);
             
@@ -119,17 +119,17 @@ export class JobManager implements Disposable
 class JobRegistration
 {
     private readonly _jobTypeName: string;
-    private readonly _jobType: Function;
+    private readonly _jobType: ClassHierarchy<Job>;
     
     private _jobInstance: Job | null;
 
 
     public get jobTypeName(): string { return this._jobTypeName; }
-    public get jobType(): Function { return this._jobType; }
+    public get jobType(): ClassHierarchy<Job> { return this._jobType; }
     public get jobInstance(): Job | null { return this._jobInstance; }
 
 
-    public constructor(jobType: Function)
+    public constructor(jobType: ClassHierarchy<Job>)
     {
         given(jobType, "jobType").ensureHasValue().ensureIsFunction();
 
@@ -142,7 +142,7 @@ class JobRegistration
     public storeJobInstance(job: Job): void
     {
         given(job, "job").ensureHasValue().ensureIsObject();
-        given(this, "this").ensure(t => t._jobInstance == null, "storing job instance twice");
+        given(this, "this").ensure(t => t._jobInstance == null, "already has job instance");
         
         this._jobInstance = job;
     }

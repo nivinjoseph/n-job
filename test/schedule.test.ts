@@ -4,7 +4,7 @@ import { Exception } from "@nivinjoseph/n-exception";
 import { Schedule } from "../src/schedule";
 
 
-suite.only("Schedule", () =>
+suite("Schedule", () =>
 {
 
     suite("Single config", () =>

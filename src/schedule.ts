@@ -87,14 +87,15 @@ export class Schedule
      */
     public calculateNext(referenceDateTime: number): number
     {
-        const referenceDate = this.createMoment(referenceDateTime);
+        const referenceDate = this._createMoment(referenceDateTime);
 
         const nextDate = referenceDate.clone().millisecond(0).second(0).add(1, "minute"); // now + 1 min assuming checks are done every min.
 
         if (this._dayOfMonth != null && this._month != null)
-            this.validateDayOfMonthAndMonth();
+            this._validateDayOfMonthAndMonth();
         
 
+        // eslint-disable-next-line no-constant-condition
         while (true)
         {
             if (this._month != null && nextDate.month() !== this._month)
@@ -128,18 +129,18 @@ export class Schedule
     }
 
 
-    private validateDayOfMonthAndMonth(): void
+    private _validateDayOfMonthAndMonth(): void
     {
         if (this._month === 1 && this._dayOfMonth === 29) // this is leap year edge case
             return;
 
-        if (this.createMoment().month(this._month as number).daysInMonth() < (<number>this._dayOfMonth))
+        if (this._createMoment().month(this._month as number).daysInMonth() < (<number>this._dayOfMonth))
         {
             throw new InvalidScheduleException(`${this._month} does not have ${this._dayOfMonth} day.`);
         }
     }
     
-    private createMoment(dateTime?: number): moment.Moment
+    private _createMoment(dateTime?: number): moment.Moment
     {
         given(dateTime as number, "dateTime").ensureIsNumber();
         
@@ -151,7 +152,7 @@ export class Schedule
                 result = result.utc();
                 break;
             case ScheduleDateTimeZone.local:
-                result = result;
+                // result = result;
                 break;
             case ScheduleDateTimeZone.est:
                 result = result.tz("America/New_York");

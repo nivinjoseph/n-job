@@ -1,7 +1,7 @@
 import { Logger } from "@nivinjoseph/n-log";
 import { given } from "@nivinjoseph/n-defensive";
 import { Job } from "./job";
-import { ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { Exception, ObjectDisposedException } from "@nivinjoseph/n-exception";
 import { Duration } from "@nivinjoseph/n-util";
 
 // public
@@ -38,7 +38,7 @@ export abstract class TimedJob implements Job
         
         this._isStarted = true;
         
-        this.execute();
+        this._execute();
     }
     
     public async dispose(): Promise<void>
@@ -54,12 +54,13 @@ export abstract class TimedJob implements Job
     
     protected abstract run(): Promise<void>;
     
-    private execute(): void
+    private _execute(): void
     {
         if (this._isDisposed)
             return;
         
-        this._timeout = setTimeout(async () =>
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        this._timeout = setTimeout(async (): Promise<void> =>
         {
             if (this._isDisposed)
                 return;
@@ -74,14 +75,14 @@ export abstract class TimedJob implements Job
             catch (error)
             {
                 await this._logger.logWarning(`Failed to run timed job ${(<Object>this).getTypeName()}.`);
-                await this._logger.logError(error);
+                await this._logger.logError(error as Exception);
                 isError = true;
             }
 
             if (!isError)
                 await this._logger.logInfo(`Finished running timed job ${(<Object>this).getTypeName()}.`);
             
-            this.execute();
+            this._execute();
 
         }, this._intervalMilliseconds);
     }

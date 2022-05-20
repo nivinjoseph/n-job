@@ -2,7 +2,7 @@ import { Job } from "./job";
 import { Logger } from "@nivinjoseph/n-log";
 import { given } from "@nivinjoseph/n-defensive";
 import { Schedule } from "./schedule";
-import { ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { Exception, ObjectDisposedException } from "@nivinjoseph/n-exception";
 import { Duration } from "@nivinjoseph/n-util";
 
 // public
@@ -24,7 +24,7 @@ export abstract class ScheduledJob implements Job
         given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
 
-        given(schedule, "schedule").ensureHasValue().ensureIsObject().ensureIsInstanceOf(Schedule);
+        given(schedule, "schedule").ensureHasValue().ensureIsType(Schedule);
         this._schedule = schedule;
     }
     
@@ -38,7 +38,7 @@ export abstract class ScheduledJob implements Job
 
         this._isStarted = true;
 
-        this.execute();
+        this._execute();
     }
     
     public async dispose(): Promise<void>
@@ -54,7 +54,7 @@ export abstract class ScheduledJob implements Job
 
     protected abstract run(): Promise<void>;
     
-    private execute(): void
+    private _execute(): void
     {
         if (this._isDisposed)
             return;
@@ -77,14 +77,15 @@ export abstract class ScheduledJob implements Job
                 if (this._isDisposed)
                     return;
 
-                this.execute();
+                this._execute();
 
             }, Duration.fromDays(15).toMilliSeconds(true));
             
             return;
         }
         
-        this._timeout = setTimeout(async () =>
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        this._timeout = setTimeout(async (): Promise<void> =>
         {
             if (this._isDisposed)
                 return;
@@ -99,14 +100,14 @@ export abstract class ScheduledJob implements Job
             catch (error)
             {
                 await this._logger.logWarning(`Failed to run scheduled job ${(<Object>this).getTypeName()}.`);
-                await this._logger.logError(error);
+                await this._logger.logError(error as Exception);
                 isError = true;
             }
 
             if (!isError)
                 await this._logger.logInfo(`Finished running scheduled job ${(<Object>this).getTypeName()}.`);
 
-            this.execute();
+            this._execute();
 
         }, next);
     }
