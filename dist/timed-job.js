@@ -13,7 +13,7 @@ class TimedJob {
         this._timeout = null;
         (0, n_defensive_1.given)(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
-        (0, n_defensive_1.given)(intervalDuration, "intervalDuration").ensureHasValue().ensureIsInstanceOf(n_util_1.Duration)
+        (0, n_defensive_1.given)(intervalDuration, "intervalDuration").ensureHasValue().ensureIsObject()
             .ensure(t => t.toMilliSeconds(true) >= 0 && t.toMilliSeconds(true) <= n_util_1.Duration.fromHours(12).toMilliSeconds(true), "should be between 0 ms and 12 hrs");
         this._intervalMilliseconds = intervalDuration.toMilliSeconds(true);
     }
