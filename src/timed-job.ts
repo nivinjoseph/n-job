@@ -23,7 +23,7 @@ export abstract class TimedJob implements Job
         given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
 
-        given(intervalDuration, "intervalDuration").ensureHasValue().ensureIsInstanceOf(Duration)
+        given(intervalDuration, "intervalDuration").ensureHasValue().ensureIsObject()
             .ensure(t => t.toMilliSeconds(true) >= 0 && t.toMilliSeconds(true) <= Duration.fromHours(12).toMilliSeconds(true), "should be between 0 ms and 12 hrs");
         this._intervalMilliseconds = intervalDuration.toMilliSeconds(true);
     }
