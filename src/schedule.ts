@@ -1,7 +1,7 @@
 import { given } from "@nivinjoseph/n-defensive";
-import * as moment from "moment-timezone";
-import { InvalidScheduleException } from "./InvalidScheduleException";
-import { ScheduleDateTimeZone } from "./schedule-date-time-zone";
+import moment from "moment-timezone";
+import { InvalidScheduleException } from "./invalid-schedule-exception.js";
+import { ScheduleDateTimeZone } from "./schedule-date-time-zone.js";
 
 // public
 export class Schedule

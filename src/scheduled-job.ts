@@ -1,9 +1,9 @@
-import { Job } from "./job";
-import { Logger } from "@nivinjoseph/n-log";
 import { given } from "@nivinjoseph/n-defensive";
-import { Schedule } from "./schedule";
-import { Exception, ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { Logger } from "@nivinjoseph/n-log";
 import { Duration } from "@nivinjoseph/n-util";
+import { Job } from "./job.js";
+import { Schedule } from "./schedule.js";
 
 // public
 export abstract class ScheduledJob implements Job
@@ -13,12 +13,12 @@ export abstract class ScheduledJob implements Job
     private _isStarted = false;
     private _isDisposed = false;
     private _timeout: any = null;
-    
-    
+
+
     protected get logger(): Logger { return this._logger; }
     protected get isDisposed(): boolean { return this._isDisposed; }
 
-    
+
     public constructor(logger: Logger, schedule: Schedule)
     {
         given(logger, "logger").ensureHasValue().ensureIsObject();
@@ -27,8 +27,8 @@ export abstract class ScheduledJob implements Job
         given(schedule, "schedule").ensureHasValue().ensureIsType(Schedule);
         this._schedule = schedule;
     }
-    
-    
+
+
     public start(): void
     {
         if (this._isDisposed)
@@ -40,7 +40,7 @@ export abstract class ScheduledJob implements Job
 
         this._execute();
     }
-    
+
     public async dispose(): Promise<void>
     {
         if (this._isDisposed)
@@ -53,7 +53,7 @@ export abstract class ScheduledJob implements Job
     }
 
     protected abstract run(): Promise<void>;
-    
+
     private _execute(): void
     {
         if (this._isDisposed)
@@ -65,10 +65,10 @@ export abstract class ScheduledJob implements Job
         // {
         //     this._logger.logWarning("Next execution is over 20 days from now. Scheduling skipped.")
         //         .catch(e => console.error(e));
-            
+
         //     return;
         // }
-        
+
         if (next > Duration.fromDays(20).toMilliSeconds(true))
         {
             // We reschedule the scheduling
@@ -80,10 +80,10 @@ export abstract class ScheduledJob implements Job
                 this._execute();
 
             }, Duration.fromDays(15).toMilliSeconds(true));
-            
+
             return;
         }
-        
+
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this._timeout = setTimeout(async (): Promise<void> =>
         {
@@ -97,10 +97,10 @@ export abstract class ScheduledJob implements Job
             {
                 await this.run();
             }
-            catch (error)
+            catch (error: any)
             {
                 await this._logger.logWarning(`Failed to run scheduled job ${(<Object>this).getTypeName()}.`);
-                await this._logger.logError(error as Exception);
+                await this._logger.logError(error);
                 isError = true;
             }
 
