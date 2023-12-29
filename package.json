@@ -32,6 +32,7 @@
     },
     "homepage": "https://github.com/nivinjoseph/n-job#readme",
     "devDependencies": {
+        "@types/luxon": "^3.3.6",
         "@types/node": "^20.10",
         "@typescript-eslint/eslint-plugin": "^6.15.0",
         "@typescript-eslint/parser": "^6.15.0",
@@ -46,8 +47,7 @@
         "@nivinjoseph/n-ject": "^2.0.5",
         "@nivinjoseph/n-log": "^2.1.8",
         "@nivinjoseph/n-util": "^1.1.1",
-        "moment": "^2.29.4",
-        "moment-timezone": "^0.5.39"
+        "luxon": "^3.4.4"
     },
     "engineStrict": true,
     "engines": {
