@@ -1,7 +1,7 @@
-import { given } from "@nivinjoseph/n-defensive";
-import * as moment from "moment-timezone";
-import { InvalidScheduleException } from "./InvalidScheduleException";
-import { ScheduleDateTimeZone } from "./schedule-date-time-zone";
+import { ensureExhaustiveCheck, given } from "@nivinjoseph/n-defensive";
+import { DateTime } from "luxon";
+import { InvalidScheduleException } from "./invalid-schedule-exception.js";
+import { ScheduleDateTimeZone } from "./schedule-date-time-zone.js";
 
 // public
 export class Schedule
@@ -20,15 +20,15 @@ export class Schedule
     public get dayOfWeek(): number | null { return this._dayOfWeek; }
     public get dayOfMonth(): number | null { return this._dayOfMonth; }
     public get month(): number | null { return this._month; }
-    
-    
+
+
     public setTimeZone(value: ScheduleDateTimeZone): this
     {
         given(value, "value").ensureHasValue().ensureIsString().ensureIsEnum(ScheduleDateTimeZone);
         this._timeZone = value;
         return this;
     }
-    
+
     /**
      * @param value [0-59]
      */
@@ -38,7 +38,7 @@ export class Schedule
         this._minute = value;
         return this;
     }
-    
+
     /**
      * @param value [0-23]
      */
@@ -48,19 +48,19 @@ export class Schedule
         this._hour = value;
         return this;
     }
-    
+
     /**
      * 
-     * @param value [0-6] where 0 is Sunday and 6 is Saturday
+     * @param value [1-7] where 1 is Monday and 7 is Sunday
      */
     public setDayOfWeek(value: number): this
     {
-        given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 6)
+        given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 1 && t <= 7)
             .ensure(_ => this._dayOfMonth === null, "Can not set dayOfWeek when dayOfMonth is set");
         this._dayOfWeek = value;
         return this;
     }
-    
+
     /**
      * @param value [1-31]
      */
@@ -71,13 +71,13 @@ export class Schedule
         this._dayOfMonth = value;
         return this;
     }
-    
+
     /**
-     * @param value [0-11]
+     * @param value [1-12]
      */
     public setMonth(value: number): this
     {
-        given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 0 && t <= 11);
+        given(value, "value").ensureHasValue().ensureIsNumber().ensure(t => t >= 1 && t <= 12, "months should be between 1-12");
         this._month = value;
         return this;
     }
@@ -85,42 +85,54 @@ export class Schedule
     /**
      * @param referenceDateTime epoch time
      */
-    public calculateNext(referenceDateTime: number): number
+    public calculateNext(referenceDateTimeMs: number): number
     {
-        const referenceDate = this._createMoment(referenceDateTime);
+        const referenceDate = this._createDateTime(referenceDateTimeMs);
 
-        const nextDate = referenceDate.clone().millisecond(0).second(0).add(1, "minute"); // now + 1 min assuming checks are done every min.
+        let nextDate = referenceDate.set({
+            millisecond: 0,
+            second: 0
+        }).plus({ minutes: 1 });   // now + 1 min assuming checks are done every min.
 
         if (this._dayOfMonth != null && this._month != null)
             this._validateDayOfMonthAndMonth();
-        
 
         // eslint-disable-next-line no-constant-condition
         while (true)
         {
-            if (this._month != null && nextDate.month() !== this._month)
+            if (this._month != null && nextDate.month !== this._month)
             {
-                nextDate.add(1, "month").date(1).hour(0).minute(0);
+                nextDate = nextDate.plus({ months: 1 }).set({
+                    day: 1,
+                    hour: 0,
+                    minute: 0
+                });
                 continue;
             }
-            if (this._dayOfMonth != null && nextDate.date() !== this._dayOfMonth)
+            if (this._dayOfMonth != null && nextDate.day !== this._dayOfMonth)
             {
-                nextDate.add(1, "day").hour(0).minute(0);
+                nextDate = nextDate.plus({ day: 1 }).set({
+                    hour: 0,
+                    minute: 0
+                });
                 continue;
             }
-            if (this._dayOfWeek != null && nextDate.day() !== this._dayOfWeek)
+            if (this._dayOfWeek != null && nextDate.weekday !== this._dayOfWeek)
             {
-                nextDate.add(1, "day").hour(0).minute(0);
+                nextDate = nextDate.plus({ day: 1 }).set({
+                    hour: 0,
+                    minute: 0
+                });
                 continue;
             }
-            if (this._hour != null && nextDate.hour() !== this._hour)
+            if (this._hour != null && nextDate.hour !== this._hour)
             {
-                nextDate.add(1, "hour").minute(0);
+                nextDate =nextDate.plus({ hour: 1 }).set({ minute: 0 });
                 continue;
             }
-            if (this._minute != null && nextDate.minute() !== this._minute)
+            if (this._minute != null && nextDate.minute !== this._minute)
             {
-                nextDate.add(1, "minute");
+                nextDate = nextDate.plus({ minute: 1 });
                 continue;
             }
             break;
@@ -131,37 +143,42 @@ export class Schedule
 
     private _validateDayOfMonthAndMonth(): void
     {
-        if (this._month === 1 && this._dayOfMonth === 29) // this is leap year edge case
+        given(this, "this").ensure(t => t._month != null).ensure(t => t._dayOfMonth != null);
+
+        if (this._month === 2 && this._dayOfMonth === 29) // this is leap year edge case
             return;
 
-        if (this._createMoment().month(this._month as number).daysInMonth() < (<number>this._dayOfMonth))
+        // shouldn't this be <= ?
+        // no it shouldn't since it is checking the failed case
+        // This if condition is true, if the dayOfMonth > daysInMonth (check invalid config tests)
+        if (this._createDateTime().set({ month: this._month! }).daysInMonth! < this._dayOfMonth!) 
         {
             throw new InvalidScheduleException(`${this._month} does not have ${this._dayOfMonth} day.`);
         }
     }
-    
-    private _createMoment(dateTime?: number): moment.Moment
+
+    private _createDateTime(dateTimeInMs?: number): DateTime
     {
-        given(dateTime as number, "dateTime").ensureIsNumber();
-        
-        let result = dateTime ? moment(dateTime) : moment();
-        
+        given(dateTimeInMs, "dateTimeInMs").ensureIsNumber().ensure(t => t > 0);
+
+        let result = dateTimeInMs ? DateTime.fromMillis(dateTimeInMs) : DateTime.now();
+
         switch (this._timeZone)
         {
             case ScheduleDateTimeZone.utc:
-                result = result.utc();
+                result = result.setZone("utc");
                 break;
             case ScheduleDateTimeZone.local:
-                // result = result;
+                result = result.setZone("local");
                 break;
             case ScheduleDateTimeZone.est:
-                result = result.tz("America/New_York");
+                result = result.setZone("America/New_York");
                 break;
             case ScheduleDateTimeZone.pst:
-                result = result.tz("America/Los_Angeles");
+                result = result.setZone("America/Los_Angeles");
                 break;
             default:
-                throw new InvalidScheduleException("Invalid ScheduleDateTimeZone");
+                ensureExhaustiveCheck(this._timeZone);
         }
         
         return result;

@@ -1,8 +1,8 @@
-import { Logger } from "@nivinjoseph/n-log";
 import { given } from "@nivinjoseph/n-defensive";
-import { Job } from "./job";
-import { Exception, ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { ObjectDisposedException } from "@nivinjoseph/n-exception";
+import { Logger } from "@nivinjoseph/n-log";
 import { Duration } from "@nivinjoseph/n-util";
+import { Job } from "./job.js";
 
 // public
 export abstract class TimedJob implements Job
@@ -72,10 +72,10 @@ export abstract class TimedJob implements Job
             {
                 await this.run();
             }
-            catch (error)
+            catch (error: any)
             {
                 await this._logger.logWarning(`Failed to run timed job ${(<Object>this).getTypeName()}.`);
-                await this._logger.logError(error as Exception);
+                await this._logger.logError(error);
                 isError = true;
             }
 
