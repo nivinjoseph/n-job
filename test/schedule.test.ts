@@ -278,28 +278,6 @@ await describe("Schedule", async () =>
             assert.strictEqual(next, expected);
         });
 
-        await test("given schedule has config month = 2 dayOfMonth = 31, when next is calculated with reference 2019-01-01 00:00, then InvalidScheduleException should be thrown", () =>
-        {
-            const schedule = new Schedule();
-            schedule.setDayOfMonth(31);
-            schedule.setMonth(2);
-            const reference = createDateTime("2019-01-01 00:00").valueOf();
-
-            assert.throws(() => schedule.calculateNext(reference),
-                (exp: Exception) => exp.name === "InvalidScheduleException");
-        });
-
-        await test("given schedule has config month = 11 dayOfMonth = 31, when next is calculated with reference 2019-01-01 00:00, then InvalidScheduleException should thrown", () =>
-        {
-            const schedule = new Schedule();
-            schedule.setDayOfMonth(31);
-            schedule.setMonth(11);
-            const reference = createDateTime("2019-01-01 00:00").valueOf();
-
-            assert.throws(() => schedule.calculateNext(reference),
-                (exp: Exception) => exp.name === "InvalidScheduleException");
-        });
-
         await test("given schedule has config month = 2 dayOfMonth = 29 hour, when next is calculated with reference 2018-01-01 00:00, then then result should be 2020-02-29 00:00", () =>
         {
             const schedule = new Schedule();
@@ -314,6 +292,28 @@ await describe("Schedule", async () =>
 
     await describe("Invalid config", async () =>
     {
+        await test("given schedule has config month = 2 dayOfMonth = 31, when next is calculated with reference 2019-01-01 00:00, then InvalidScheduleException should be thrown", () =>
+        {
+            const schedule = new Schedule();
+            schedule.setDayOfMonth(31);
+            schedule.setMonth(2);
+            const reference = createDateTime("2019-01-01 00:00").valueOf();
+
+            assert.throws(() => schedule.calculateNext(reference),
+                (exp: Exception) => exp.name === "InvalidScheduleException" && exp.message === "2 does not have 31 day.");
+        });
+
+        await test("given schedule has config month = 11 dayOfMonth = 31, when next is calculated with reference 2019-01-01 00:00, then InvalidScheduleException should thrown", () =>
+        {
+            const schedule = new Schedule();
+            schedule.setDayOfMonth(31);
+            schedule.setMonth(11);
+            const reference = createDateTime("2019-01-01 00:00").valueOf();
+
+            assert.throws(() => schedule.calculateNext(reference),
+                (exp: Exception) => exp.name === "InvalidScheduleException" && exp.message === "11 does not have 31 day.");
+        });
+        
         await test("given schedule has config dayOfMonth = 31, when dayOfWeek is set to 2, then ArgumentException with message 'Argument 'value' Can not set dayOfWeek when dayOfMonth is set.' should be thrown", () =>
         {
             const schedule = new Schedule();

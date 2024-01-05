@@ -148,7 +148,10 @@ export class Schedule
         if (this._month === 2 && this._dayOfMonth === 29) // this is leap year edge case
             return;
 
-        if (this._createDateTime().set({ month: this._month! }).daysInMonth! < this._dayOfMonth!) // shouldn't this be <= 
+        // shouldn't this be <= ?
+        // no it shouldn't since it is checking the failed case
+        // This if condition is true, if the dayOfMonth > daysInMonth (check invalid config tests)
+        if (this._createDateTime().set({ month: this._month! }).daysInMonth! < this._dayOfMonth!) 
         {
             throw new InvalidScheduleException(`${this._month} does not have ${this._dayOfMonth} day.`);
         }
