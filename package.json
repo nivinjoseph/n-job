@@ -1,6 +1,6 @@
 {
     "name": "@nivinjoseph/n-job",
-    "version": "1.0.27",
+    "version": "2.0.0",
     "description": "Job scheduling and execution",
     "packageManager": "yarn@4.0.2",
     "type": "module",
@@ -44,9 +44,9 @@
         "@nivinjoseph/n-defensive": "^2.0.1",
         "@nivinjoseph/n-exception": "^2.0.1",
         "@nivinjoseph/n-ext": "^2.0.1",
-        "@nivinjoseph/n-ject": "^2.0.5",
-        "@nivinjoseph/n-log": "^2.1.8",
-        "@nivinjoseph/n-util": "^1.1.1",
+        "@nivinjoseph/n-ject": "^3.0.1",
+        "@nivinjoseph/n-log": "^3.0.1",
+        "@nivinjoseph/n-util": "^2.0.1",
         "luxon": "^3.4.4"
     },
     "engineStrict": true,

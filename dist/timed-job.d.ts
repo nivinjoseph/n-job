@@ -1,6 +1,6 @@
 import { Logger } from "@nivinjoseph/n-log";
-import { Job } from "./job";
 import { Duration } from "@nivinjoseph/n-util";
+import { Job } from "./job.js";
 export declare abstract class TimedJob implements Job {
     private readonly _logger;
     private readonly _intervalMilliseconds;
@@ -15,3 +15,4 @@ export declare abstract class TimedJob implements Job {
     protected abstract run(): Promise<void>;
     private _execute;
 }
+//# sourceMappingURL=timed-job.d.ts.map

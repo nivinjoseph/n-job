@@ -1,4 +1,4 @@
-import { ScheduleDateTimeZone } from "./schedule-date-time-zone";
+import { ScheduleDateTimeZone } from "./schedule-date-time-zone.js";
 export declare class Schedule {
     private _timeZone;
     private _minute;
@@ -23,7 +23,7 @@ export declare class Schedule {
     setHour(value: number): this;
     /**
      *
-     * @param value [0-6] where 0 is Sunday and 6 is Saturday
+     * @param value [1-7] where 1 is Monday and 7 is Sunday
      */
     setDayOfWeek(value: number): this;
     /**
@@ -31,13 +31,14 @@ export declare class Schedule {
      */
     setDayOfMonth(value: number): this;
     /**
-     * @param value [0-11]
+     * @param value [1-12]
      */
     setMonth(value: number): this;
     /**
      * @param referenceDateTime epoch time
      */
-    calculateNext(referenceDateTime: number): number;
+    calculateNext(referenceDateTimeMs: number): number;
     private _validateDayOfMonthAndMonth;
-    private _createMoment;
+    private _createDateTime;
 }
+//# sourceMappingURL=schedule.d.ts.map

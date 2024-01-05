@@ -1,6 +1,6 @@
-import { Container, Registry, ServiceLocator, ComponentInstaller } from "@nivinjoseph/n-ject";
-import { Disposable, ClassHierarchy } from "@nivinjoseph/n-util";
-import { Job } from "./job";
+import { ComponentInstaller, Container, Registry, ServiceLocator } from "@nivinjoseph/n-ject";
+import { ClassHierarchy, Disposable } from "@nivinjoseph/n-util";
+import { Job } from "./job.js";
 export declare class JobManager implements Disposable {
     private readonly _container;
     private readonly _ownsContainer;
@@ -16,3 +16,4 @@ export declare class JobManager implements Disposable {
     beginJobs(): Promise<void>;
     dispose(): Promise<void>;
 }
+//# sourceMappingURL=job-manager.d.ts.map

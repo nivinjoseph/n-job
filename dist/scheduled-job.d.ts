@@ -1,6 +1,6 @@
-import { Job } from "./job";
 import { Logger } from "@nivinjoseph/n-log";
-import { Schedule } from "./schedule";
+import { Job } from "./job.js";
+import { Schedule } from "./schedule.js";
 export declare abstract class ScheduledJob implements Job {
     private readonly _logger;
     private readonly _schedule;
@@ -15,3 +15,4 @@ export declare abstract class ScheduledJob implements Job {
     protected abstract run(): Promise<void>;
     private _execute;
 }
+//# sourceMappingURL=scheduled-job.d.ts.map
