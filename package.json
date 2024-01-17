@@ -1,6 +1,6 @@
 {
     "name": "@nivinjoseph/n-job",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "Job scheduling and execution",
     "packageManager": "yarn@4.0.2",
     "type": "module",
