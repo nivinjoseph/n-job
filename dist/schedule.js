@@ -77,7 +77,6 @@ export class Schedule {
         }).plus({ minutes: 1 }); // now + 1 min assuming checks are done every min.
         if (this._dayOfMonth != null && this._month != null)
             this._validateDayOfMonthAndMonth();
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             if (this._month != null && nextDate.month !== this._month) {
                 nextDate = nextDate.plus({ months: 1 }).set({
