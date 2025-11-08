@@ -97,7 +97,6 @@ export class Schedule
         if (this._dayOfMonth != null && this._month != null)
             this._validateDayOfMonthAndMonth();
 
-        // eslint-disable-next-line no-constant-condition
         while (true)
         {
             if (this._month != null && nextDate.month !== this._month)
