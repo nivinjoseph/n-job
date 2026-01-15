@@ -1,6 +1,6 @@
 {
     "name": "@nivinjoseph/n-job",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "description": "Job scheduling and execution",
     "packageManager": "yarn@4.0.2",
     "type": "module",
@@ -16,7 +16,7 @@
         "clean-dist": "find ./dist -name '*.js' -delete -o -name '*.map' -delete -o -name '*.ts' -delete",
         "clean-test": "find ./test -name '*.js' -delete -o -name '*.map' -delete",
         "clean-all": "yarn clean-src && yarn clean-test && yarn clean-dist",
-        "publish-package": "npm run ts-build-dist && git add . && git commit -m 'preparing to publish new version' && npm version patch && git push && npm publish --access=public"
+        "publish-package": "npm run ts-build-dist && git add . && git commit -m 'preparing to publish new version' && git push && npm publish --access=public"
     },
     "repository": {
         "type": "git",
@@ -46,9 +46,9 @@
         "@nivinjoseph/n-defensive": "^2.0.2",
         "@nivinjoseph/n-exception": "^2.0.2",
         "@nivinjoseph/n-ext": "^2.0.2",
-        "@nivinjoseph/n-ject": "^3.0.3",
-        "@nivinjoseph/n-log": "^3.0.5",
-        "@nivinjoseph/n-util": "^3.0.2",
+        "@nivinjoseph/n-ject": "^3.0.4",
+        "@nivinjoseph/n-log": "^3.0.6",
+        "@nivinjoseph/n-util": "^3.2.0",
         "luxon": "^3.7.2"
     },
     "engines": {
