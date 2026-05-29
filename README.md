@@ -22,7 +22,7 @@ yarn add @nivinjoseph/n-job
 
 ## Requirements
 
-- Node.js >= 20.10
+- Node.js >= 24.10
 - TypeScript (optional, but recommended)
 
 ## Usage
@@ -33,6 +33,7 @@ yarn add @nivinjoseph/n-job
 import { JobManager, Schedule, ScheduleDateTimeZone, ScheduledJob, TimedJob } from "@nivinjoseph/n-job";
 import { inject } from "@nivinjoseph/n-ject";
 import type { Logger } from "@nivinjoseph/n-log";
+import { Duration } from "@nivinjoseph/n-util";
 
 // Create a job manager instance
 const jobManager = new JobManager();
@@ -43,7 +44,7 @@ export class TimedTestJob extends TimedJob
 {
     public constructor(logger: Logger)
     {
-        super(logger, Duration.fromMinutes(10) as any);
+        super(logger, Duration.fromMinutes(10));
     }
 
     protected async run(): Promise<void>
@@ -120,17 +121,23 @@ const schedule = new Schedule()
 
 #### Important Notes
 
-1. **Recurring Schedules**: 
+1. **Wildcard semantics (important)**:
+   - Every time component you set acts as a filter; **any component you do _not_ set matches every value**, exactly like `*` in a cron expression.
+   - As a result, the job runs once for **every minute** that all the components you _did_ set are satisfied.
+   - For example, `new Schedule().setHour(8)` does **not** run once at 8 AM — it runs every minute from `08:00` through `08:59`, every day (equivalent to cron `* 8 * * *`). To run once per day at 8 AM, you must also pin the minute: `setHour(8).setMinute(0)`.
+   - Rule of thumb: always set `minute` (and `hour`) unless you genuinely want the job to fire every minute within the matching window.
+
+2. **Recurring Schedules** (assuming `hour` and `minute` are set):
    - If you don't set `month` and `dayOfMonth`, the schedule will repeat at the specified time every day
    - If you set `dayOfWeek` but not `month` and `dayOfMonth`, it will repeat weekly
    - If you set `month` and `dayOfMonth`, it will repeat yearly
 
-2. **Time Components**:
+3. **Time Components**:
    - `dayOfWeek` and `dayOfMonth` are mutually exclusive - you can't set both
-   - All time components are optional except `hour` and `minute`
+   - All time components are optional (an empty `Schedule` runs every minute; see wildcard semantics above)
    - If you don't set `timeZone`, it defaults to the local timezone
 
-3. **Validation**:
+4. **Validation**:
    - The library validates that the day of month exists for the specified month
    - For February 29th, it handles leap years automatically
 
@@ -246,7 +253,7 @@ Base class for timed jobs.
 
 #### Constructor
 
-- `TimedJob(logger: Logger, intervalInMs: number)`
+- `TimedJob(logger: Logger, intervalDuration: Duration)` - the interval must be between 0 ms and 12 hours; for anything longer, use a `ScheduledJob` instead
 
 #### Methods
 
