@@ -4,14 +4,12 @@ import { InvalidScheduleException } from "./invalid-schedule-exception.js";
 import { ScheduleDateTimeZone } from "./schedule-date-time-zone.js";
 // public
 export class Schedule {
-    constructor() {
-        this._timeZone = ScheduleDateTimeZone.local;
-        this._minute = null;
-        this._hour = null;
-        this._dayOfWeek = null;
-        this._dayOfMonth = null;
-        this._month = null;
-    }
+    _timeZone = ScheduleDateTimeZone.local;
+    _minute = null;
+    _hour = null;
+    _dayOfWeek = null;
+    _dayOfMonth = null;
+    _month = null;
     get timeZone() { return this._timeZone; }
     get minute() { return this._minute; }
     get hour() { return this._hour; }

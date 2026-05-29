@@ -4,12 +4,14 @@ import { Duration } from "@nivinjoseph/n-util";
 import { Schedule } from "./schedule.js";
 // public
 export class ScheduledJob {
+    _logger;
+    _schedule;
+    _isStarted = false;
+    _isDisposed = false;
+    _timeout = null;
     get logger() { return this._logger; }
     get isDisposed() { return this._isDisposed; }
     constructor(logger, schedule) {
-        this._isStarted = false;
-        this._isDisposed = false;
-        this._timeout = null;
         given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
         given(schedule, "schedule").ensureHasValue().ensureIsType(Schedule);

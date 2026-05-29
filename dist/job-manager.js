@@ -4,11 +4,14 @@ import { Container } from "@nivinjoseph/n-ject";
 import { Delay } from "@nivinjoseph/n-util";
 // public
 export class JobManager {
+    _container;
+    _ownsContainer;
+    _jobRegistrations;
+    _isDisposed = false;
+    _isBootstrapped = false;
     get containerRegistry() { return this._container; }
     get serviceLocator() { return this._container; }
     constructor(container) {
-        this._isDisposed = false;
-        this._isBootstrapped = false;
         given(container, "container").ensureIsObject().ensureIsType(Container);
         if (container == null) {
             this._container = new Container();
@@ -71,6 +74,9 @@ export class JobManager {
     }
 }
 class JobRegistration {
+    _jobTypeName;
+    _jobType;
+    _jobInstance;
     get jobTypeName() { return this._jobTypeName; }
     get jobType() { return this._jobType; }
     get jobInstance() { return this._jobInstance; }

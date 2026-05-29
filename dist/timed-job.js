@@ -3,12 +3,14 @@ import { ObjectDisposedException } from "@nivinjoseph/n-exception";
 import { Duration } from "@nivinjoseph/n-util";
 // public
 export class TimedJob {
+    _logger;
+    _intervalMilliseconds;
+    _isStarted = false;
+    _isDisposed = false;
+    _timeout = null;
     get logger() { return this._logger; }
     get isDisposed() { return this._isDisposed; }
     constructor(logger, intervalDuration) {
-        this._isStarted = false;
-        this._isDisposed = false;
-        this._timeout = null;
         given(logger, "logger").ensureHasValue().ensureIsObject();
         this._logger = logger;
         given(intervalDuration, "intervalDuration").ensureHasValue().ensureIsObject()
